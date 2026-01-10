@@ -1,5 +1,7 @@
 // craco.config.js
 const path = require("path");
+const webpack = require("webpack");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 require("dotenv").config();
 
 // Check if we're in development/preview mode (not production build)
@@ -60,6 +62,45 @@ const webpackConfig = {
             '**/public/**',
         ],
       };
+
+      // Cesium configuration
+      webpackConfig.plugins = webpackConfig.plugins || [];
+      
+      // Define Cesium base URL
+      webpackConfig.plugins.push(
+        new webpack.DefinePlugin({
+          CESIUM_BASE_URL: JSON.stringify('/cesium'),
+        })
+      );
+
+      // Copy Cesium assets (if not already in public)
+      webpackConfig.plugins.push(
+        new CopyWebpackPlugin({
+          patterns: [
+            {
+              from: path.join(__dirname, 'node_modules/cesium/Build/Cesium/Workers'),
+              to: 'cesium/Workers',
+            },
+            {
+              from: path.join(__dirname, 'node_modules/cesium/Build/Cesium/ThirdParty'),
+              to: 'cesium/ThirdParty',
+            },
+            {
+              from: path.join(__dirname, 'node_modules/cesium/Build/Cesium/Assets'),
+              to: 'cesium/Assets',
+            },
+            {
+              from: path.join(__dirname, 'node_modules/cesium/Build/Cesium/Widgets'),
+              to: 'cesium/Widgets',
+            },
+          ],
+        })
+      );
+
+      // Handle source maps properly
+      webpackConfig.module = webpackConfig.module || {};
+      webpackConfig.module.unknownContextCritical = false;
+      webpackConfig.module.unknownContextRegExp = /\/cesium\/cesium\/Source\/Core\/buildModuleUrl\.js/;
 
       // Add health check plugin to webpack if enabled
       if (config.enableHealthCheck && healthPluginInstance) {
