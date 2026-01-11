@@ -248,15 +248,16 @@ const App = () => {
         if (layer.type === 'geojson' && layer.resource) {
           viewer.dataSources.remove(layer.resource);
         } else if (layer.type === 'imagery' && layer.resource) {
-          viewer.imageryLayers.remove(layer.resource);
+          viewer.imageryLayers.remove(layer.resource, true);
         } else if (layer.type === '3dtiles' && layer.resource) {
           viewer.scene.primitives.remove(layer.resource);
         } else if (layer.type === 'terrain') {
-          // Reset to default terrain
+          // Reset to default ellipsoid terrain
           viewer.terrainProvider = new Terrain();
         }
       } catch (error) {
         console.error('Error removing layer:', error);
+        toast.error(`Failed to remove ${layer.name}`);
       }
 
       // Remove from state
