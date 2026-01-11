@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the Cesium Globe geospatial visualization application at https://cesium-globe.preview.emergentagent.com"
+user_problem_statement: "Test the Cesium Globe geospatial visualization application at https://geomaps-explorer.preview.emergentagent.com"
 
 frontend:
   - task: "Cesium Globe UI Header"
