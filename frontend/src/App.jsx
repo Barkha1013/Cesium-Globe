@@ -39,9 +39,13 @@ const App = () => {
     }
   }, []);
 
-  // Request geolocation on mount
+  // Request geolocation on mount (only if available)
   useEffect(() => {
-    requestUserLocation();
+    // Check if geolocation is available and not blocked by policy
+    if (navigator.geolocation) {
+      // Don't auto-request on mount to avoid permission errors
+      // User can click the location button instead
+    }
   }, []);
 
   const requestUserLocation = useCallback(() => {
