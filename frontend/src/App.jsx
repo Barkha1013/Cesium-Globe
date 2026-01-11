@@ -20,6 +20,9 @@ import {
   Color,
 } from 'cesium';
 
+// Set Cesium base URL
+window.CESIUM_BASE_URL = '/cesium';
+
 const App = () => {
   const [viewer, setViewer] = useState(null);
   const [loadedLayers, setLoadedLayers] = useState([]);
@@ -28,24 +31,28 @@ const App = () => {
   const [userLocation, setUserLocation] = useState(null);
   const [isLocating, setIsLocating] = useState(false);
   const [locationMarker, setLocationMarker] = useState(null);
+  const [cesiumReady, setCesiumReady] = useState(false);
 
-  // Initialize Cesium Ion
+  // Initialize Cesium Ion before anything else
   useEffect(() => {
     const token = process.env.REACT_APP_CESIUM_TOKEN;
     if (token) {
-      initializeCesiumIon(token);
+      try {
+        initializeCesiumIon(token);
+        setCesiumReady(true);
+        console.log('Cesium Ion initialized successfully');
+      } catch (error) {
+        console.error('Failed to initialize Cesium Ion:', error);
+        toast.error('Failed to initialize Cesium');
+      }
     } else {
-      toast.error('Cesium Ion token not found. Please check your .env file.');
+      toast.error('Cesium Ion token not found');
     }
   }, []);
 
-  // Request geolocation on mount (only if available)
-  useEffect(() => {
-    // Check if geolocation is available and not blocked by policy
-    if (navigator.geolocation) {
-      // Don't auto-request on mount to avoid permission errors
-      // User can click the location button instead
-    }
+  const handleViewerReady = useCallback((viewerInstance) => {
+    console.log('Viewer ready');
+    setViewer(viewerInstance);
   }, []);
 
   const requestUserLocation = useCallback(() => {
@@ -98,7 +105,7 @@ const App = () => {
       },
       (error) => {
         console.error('Geolocation error:', error);
-        toast.error(`Location access denied: ${error.message}`);
+        toast.error('Unable to get location. Please enable location permissions.');
         setIsLocating(false);
       }
     );
@@ -143,7 +150,7 @@ const App = () => {
             resource = dataSource;
 
             // Zoom to the data
-            viewer.flyTo(dataSource, {
+            await viewer.flyTo(dataSource, {
               duration: 2.0,
             });
             break;
@@ -163,7 +170,7 @@ const App = () => {
             resource = tileset;
 
             // Zoom to the tileset
-            viewer.flyTo(tileset, {
+            await viewer.flyTo(tileset, {
               duration: 2.0,
             });
             break;
@@ -185,7 +192,7 @@ const App = () => {
         toast.success(`${asset.name} loaded successfully!`, { id: `loading-${assetId}` });
       } catch (error) {
         console.error('Error loading asset:', error);
-        toast.error(`Failed to load ${asset.name}`, { id: `loading-${assetId}` });
+        toast.error(`Failed to load ${asset.name}: ${error.message}`, { id: `loading-${assetId}` });
       } finally {
         setLoadingAssets((prev) => {
           const newSet = new Set(prev);
@@ -287,11 +294,22 @@ const App = () => {
     [viewer]
   );
 
+  if (!cesiumReady) {
+    return (
+      <div className="relative h-screen w-screen overflow-hidden bg-background flex items-center justify-center">
+        <div className="glass-panel rounded-lg px-6 py-4 flex items-center gap-3 animate-pulse-glow">
+          <AlertCircle className="h-5 w-5 text-primary" />
+          <p className="text-sm text-foreground">Initializing Cesium...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-background">
       {/* Cesium Viewer */}
       <CesiumViewer
-        onViewerReady={setViewer}
+        onViewerReady={handleViewerReady}
         loadedLayers={loadedLayers}
         userLocation={userLocation}
       />
@@ -357,7 +375,7 @@ const App = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
           <div className="glass-panel rounded-lg px-6 py-4 flex items-center gap-3 animate-pulse-glow">
             <AlertCircle className="h-5 w-5 text-primary" />
-            <p className="text-sm text-foreground">Initializing Cesium Globe...</p>
+            <p className="text-sm text-foreground">Loading Cesium Globe...</p>
           </div>
         </div>
       )}
