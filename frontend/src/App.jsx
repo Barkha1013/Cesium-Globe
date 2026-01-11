@@ -129,13 +129,16 @@ const App = () => {
 
         switch (asset.type) {
           case 'terrain':
-            // Load terrain
-            const terrainProvider = await createWorldTerrainAsync({
+            // Load terrain from Cesium Ion
+            const { CesiumTerrainProvider } = await import('cesium');
+            const terrainProvider = await CesiumTerrainProvider.fromIonAssetId(assetId, {
               requestWaterMask: true,
               requestVertexNormals: true,
             });
             viewer.terrainProvider = terrainProvider;
             resource = terrainProvider;
+            
+            toast.info('Terrain loaded. Zoom in to see elevation details.');
             break;
 
           case 'geojson':
@@ -156,11 +159,17 @@ const App = () => {
             break;
 
           case 'imagery':
-            // Load imagery layer
-            const imageryProvider = await IonResource.fromAssetId(assetId);
-            const imageryLayer = new ImageryLayer(imageryProvider);
-            viewer.imageryLayers.add(imageryLayer);
+            // Load imagery layer from Cesium Ion
+            const { IonImageryProvider } = await import('cesium');
+            const imageryProvider = await IonImageryProvider.fromAssetId(assetId);
+            const imageryLayer = viewer.imageryLayers.addImageryProvider(imageryProvider);
             resource = imageryLayer;
+            
+            // Set layer properties for better visibility
+            imageryLayer.alpha = 0.8;
+            imageryLayer.brightness = 1.0;
+            
+            toast.info('Imagery layer added. It may take a moment to fully load.');
             break;
 
           case '3dtiles':
