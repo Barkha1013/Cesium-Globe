@@ -104,22 +104,30 @@ Project Architecture
 
 The project follows a **modular, responsibility-driven structure**:
 ```
-/app/frontend//app/frontend/
-├── public/
-│   └── cesium/
-├── src/
-│   ├── components/
-│   │   ├── CesiumViewer.jsx
-│   │   ├── LayerManager.jsx
-│   │   ├── SearchBox.jsx
-│   │   └── MyLocationButton.jsx
-│   ├── services/
-│   │   └── cesiumAssets.js
-│   ├── App.jsx
-│   ├── index.css
-│   └── index.js
-├── craco.config.js
-└── package.json
+├── backend/
+│   ├── requirements.txt
+│   └── server.py
+├── frontend/
+│   ├── plugins/
+│   │   ├── health-check/
+│   │   └── visual-edits/
+│   ├── public/
+│   │   ├── cesium/
+│   │   └── index.html
+│   ├── src/
+│   ├── .gitignore
+│   ├── README.md
+│   ├── components.json
+│   ├── craco.config.js
+│   ├── jsconfig.json
+│   ├── package.json
+│   ├── postcss.config.js
+│   └── tailwind.config.js
+├── tests/
+│   └── __init__.py
+├── .gitconfig
+├── .gitignore
+└── README.md
 ```
 
 Each component has a single responsibility, and Cesium-specific logic is intentionally centralized to avoid tight coupling with UI components.
