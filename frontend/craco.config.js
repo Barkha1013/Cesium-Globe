@@ -5,13 +5,12 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 require("dotenv").config();
 
 // Check if we're in development/preview mode (not production build)
-// Craco sets NODE_ENV=development for start, NODE_ENV=production for build
 const isDevServer = process.env.NODE_ENV !== "production";
 
 // Environment variable overrides
 const config = {
   enableHealthCheck: process.env.ENABLE_HEALTH_CHECK === "true",
-  enableVisualEdits: isDevServer, // Only enable during dev server
+  enableVisualEdits: isDevServer,
 };
 
 // Conditionally load visual edits modules only in dev mode
@@ -49,63 +48,41 @@ const webpackConfig = {
       '@': path.resolve(__dirname, 'src'),
     },
     configure: (webpackConfig) => {
-
       // Add ignored patterns to reduce watched directories
-        webpackConfig.watchOptions = {
-          ...webpackConfig.watchOptions,
-          ignored: [
-            '**/node_modules/**',
-            '**/.git/**',
-            '**/build/**',
-            '**/dist/**',
-            '**/coverage/**',
-            '**/public/**',
+      webpackConfig.watchOptions = {
+        ...webpackConfig.watchOptions,
+        ignored: [
+          '**/node_modules/**',
+          '**/.git/**',
+          '**/build/**',
+          '**/dist/**',
+          '**/coverage/**',
+          '**/public/**',
         ],
       };
 
       // Cesium configuration
       webpackConfig.plugins = webpackConfig.plugins || [];
       
-      // Define Cesium base URL
+      // Define Cesium base URL pointing to public folder
       webpackConfig.plugins.push(
         new webpack.DefinePlugin({
           CESIUM_BASE_URL: JSON.stringify('/cesium'),
         })
       );
 
-      // Copy Cesium assets (if not already in public)
-      webpackConfig.plugins.push(
-        new CopyWebpackPlugin({
-          patterns: [
-            {
-              from: path.join(__dirname, 'node_modules/cesium/Build/Cesium/Workers'),
-              to: 'cesium/Workers',
-            },
-            {
-              from: path.join(__dirname, 'node_modules/cesium/Build/Cesium/ThirdParty'),
-              to: 'cesium/ThirdParty',
-            },
-            {
-              from: path.join(__dirname, 'node_modules/cesium/Build/Cesium/Assets'),
-              to: 'cesium/Assets',
-            },
-            {
-              from: path.join(__dirname, 'node_modules/cesium/Build/Cesium/Widgets'),
-              to: 'cesium/Widgets',
-            },
-          ],
-        })
-      );
-
-      // Handle source maps properly
-      webpackConfig.module = webpackConfig.module || {};
+      // Ignore Cesium source maps warnings
+      webpackConfig.ignoreWarnings = [/Failed to parse source map/];
+      
+      // Handle Cesium module resolution
+      if (!webpackConfig.module) webpackConfig.module = {};
       webpackConfig.module.unknownContextCritical = false;
-      webpackConfig.module.unknownContextRegExp = /\/cesium\/cesium\/Source\/Core\/buildModuleUrl\.js/;
 
       // Add health check plugin to webpack if enabled
       if (config.enableHealthCheck && healthPluginInstance) {
         webpackConfig.plugins.push(healthPluginInstance);
       }
+      
       return webpackConfig;
     },
   },
