@@ -14,8 +14,6 @@ import {
   Cartesian3,
   GeoJsonDataSource,
   Cesium3DTileset,
-  ImageryLayer,
-  createWorldTerrainAsync,
   Terrain,
   Color,
 } from 'cesium';
